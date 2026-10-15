@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087f5b">
+<title>ENTRADAS EUROPA 0327</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#17202a;background:#f4f7f6}
+*{box-sizing:border-box}body{margin:0}header{background:#087f5b;color:#fff;padding:22px max(16px,calc((100% - 1100px)/2));}
+h1{font-size:clamp(22px,4vw,32px);margin:0 0 6px}header p{margin:0;opacity:.9}
+main{max-width:1100px;margin:20px auto;padding:0 14px 40px}.card{background:#fff;border:1px solid #dfe7e4;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px #1231}
+h2{font-size:19px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-size:14px;font-weight:650}
+input{width:100%;padding:12px;border:1px solid #b8c8c2;border-radius:9px;font:inherit;background:#fff;color:#17202a}input:focus{outline:2px solid #5ab99b;border-color:#087f5b}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}button{border:0;border-radius:9px;padding:11px 15px;font:inherit;font-weight:650;cursor:pointer;background:#087f5b;color:#fff}button.secondary{background:#e7efec;color:#174d3c}button.danger{background:#a62e2e}button:disabled{opacity:.5;cursor:not-allowed}
+.menu{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.menu button{flex:1;min-width:100px}.menu button.active{outline:3px solid #9bd8c5}
+.status{padding:10px 12px;border-radius:9px;margin:0 0 14px;display:none;white-space:pre-wrap}.status.ok{display:block;background:#e5f6ee;color:#145c3e}.status.err{display:block;background:#ffeded;color:#8e2020}.hint{color:#52635d;font-size:13px;line-height:1.45}
+.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{padding:11px;border-bottom:1px solid #e2e9e6;text-align:left;vertical-align:top}th{background:#edf4f1;font-size:13px}td{font-size:14px}.qr{max-width:160px;overflow-wrap:anywhere}.rowbtn{padding:7px 9px;margin:2px;font-size:13px}.hidden{display:none!important}.pill{display:inline-block;border-radius:999px;background:#e7efec;padding:4px 8px;font-size:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:14px}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<header><h1>ENTRADAS EUROPA 0327</h1><p>Control independiente de entradas · Marzo 2027</p></header>
+<main>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <section class="card" id="connectionCard">
+    <h2>1. Conexión con Supabase</h2>
+    <p class="hint">Introduce la URL del proyecto y la clave pública (Publishable). Estos datos se guardan solamente en este navegador. Nunca uses una clave secret o service_role en esta página.</p>
+    <div class="grid">
+      <div class="field full"><label for="supabaseUrl">Project URL</label><input id="supabaseUrl" type="url" placeholder="https://tu-proyecto.supabase.co" autocomplete="url"></div>
+      <div class="field full"><label for="supabaseKey">Publishable key</label><input id="supabaseKey" type="password" placeholder="sb_publishable_..." autocomplete="off"></div>
+    </div>
+    <div class="actions"><button id="connectBtn">Conectar</button><button id="forgetConfig" class="secondary">Borrar configuración de este navegador</button></div>
+    <p class="hint">La tabla debe llamarse <code>public.entradas_europa_0327</code>. El proyecto Supabase ya creado no se modifica desde aquí.</p>
+  </section>
+
+  <section class="card" id="authCard">
+    <h2>2. Acceso</h2>
+    <p class="hint">La tabla está protegida para usuarios autenticados. Crea primero un usuario en Supabase Authentication → Users, o utiliza las credenciales de un usuario ya creado.</p>
+    <div class="grid">
+      <div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="tu correo"></div>
+      <div class="field"><label for="password">Contraseña de usuario</label><input id="password" type="password" autocomplete="current-password" placeholder="Contraseña de Supabase Auth"></div>
+    </div>
+    <div class="actions"><button id="loginBtn">Iniciar sesión</button><button id="signupBtn" class="secondary">Crear usuario</button><button id="logoutBtn" class="secondary hidden">Cerrar sesión</button></div>
+    <p id="authState" class="hint">Sin conexión.</p>
+  </section>
+
+  <section class="card">
+    <h2>3. Administración de entradas</h2>
+    <div class="menu">
+      <button class="active" data-mode="ingresar">INGRESAR</button>
+      <button data-mode="ver">VER</button>
+      <button data-mode="modificar">MODIFICAR</button>
+      <button data-mode="buscar">BUSCAR</button>
+    </div>
+    <div id="entryPanel">
+      <h2 id="formTitle">Ingresar entrada</h2>
+      <input id="recordId" type="hidden">
+      <div class="grid">
+        <div class="field"><label for="ciudad">1. Ciudad *</label><input id="ciudad" maxlength="120" required placeholder="Ej. Madrid"></div>
+        <div class="field"><label for="fecha">2. Fecha *</label><input id="fecha" type="date" required></div>
+        <div class="field"><label for="evento">3. Evento *</label><input id="evento" maxlength="250" required placeholder="Ej. Big Bus Tours"></div>
+        <div class="field"><label for="qr">4. QR (opcional)</label><input id="qr" maxlength="2000" placeholder="Enlace web o referencia del QR"></div>
+      </div>
+      <div class="actions"><button id="saveBtn">INGRESAR</button><button id="clearBtn" class="secondary">Limpiar</button></div>
+      <p class="hint">Ciudad, Fecha y Evento son obligatorios. En QR puedes pegar un enlace al boleto o una referencia; esta versión no almacena archivos de imagen.</p>
+    </div>
+    <div id="searchPanel" class="hidden">
+      <h2>Buscar por ciudad y/o fecha</h2>
+      <div class="grid">
+        <div class="field"><label for="filterCity">Ciudad</label><input id="filterCity" placeholder="Ej. Madrid"></div>
+        <div class="field"><label for="filterDate">Fecha</label><input id="filterDate" type="date"></div>
+      </div>
+      <div class="actions"><button id="searchBtn">BUSCAR</button><button id="showAllBtn" class="secondary">VER TODO</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 id="listTitle">Entradas registradas</h2>
+    <div id="tableMessage" class="hint">Conecta Supabase e inicia sesión para consultar los registros.</div>
+    <div class="tablewrap"><table><thead><tr><th>Ciudad</th><th>Fecha</th><th>Evento</th><th>QR</th><th>Acciones</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </section>
+  <p class="hint">Aplicación independiente. No modifica PTCHU, Vuelos ni Hoteles. Antes de publicar en GitHub Pages, configura Supabase y comprueba el acceso con un usuario autenticado.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  const TABLE = 'entradas_europa_0327';
+  const $ = id => document.getElementById(id);
+  let client = null, currentUser = null, mode = 'ingresar', records = [];
+  const status = (msg, type='ok') => { $('status').textContent = msg; $('status').className = 'status ' + type; };
+  const clearStatus = () => { $('status').textContent=''; $('status').className='status'; };
+  const config = (() => { try { return JSON.parse(localStorage.getItem('entradasEuropa0327Config') || '{}'); } catch { return {}; } })();
+  $('supabaseUrl').value = config.url || '';
+  $('supabaseKey').value = config.key || '';
+
+  function setAuthUI() {
+    $('authState').textContent = currentUser ? `Sesión iniciada: ${currentUser.email || 'usuario autenticado'}` : 'No has iniciado sesión.';
+    $('logoutBtn').classList.toggle('hidden', !currentUser);
+  }
+  function requireConnection() {
+    if (!client) throw new Error('Primero introduce la URL y la clave pública y pulsa Conectar.');
+    if (!currentUser) throw new Error('Primero inicia sesión con un usuario de Supabase Authentication.');
+  }
+  async function connect() {
+    clearStatus();
+    if (!window.supabase) throw new Error('No se pudo cargar la biblioteca Supabase. Revisa tu conexión a internet.');
+    const url = $('supabaseUrl').value.trim().replace(/\/+$/,'');
+    const key = $('supabaseKey').value.trim();
+    if (!/^https:\/\/[a-zA-Z0-9-]+\.supabase\.co$/.test(url)) throw new Error('La URL debe tener el formato https://PROJECT_ID.supabase.co');
+    if (!key.startsWith('sb_publishable_') && !key.startsWith('eyJ')) throw new Error('Introduce una clave pública Publishable (sb_publishable_...). No uses claves secret o service_role.');
+    client = window.supabase.createClient(url, key);
+    localStorage.setItem('entradasEuropa0327Config', JSON.stringify({url,key}));
+    const { data, error } = await client.auth.getSession();
+    if (error) throw error;
+    currentUser = data.session?.user || null;
+    setAuthUI();
+    status('Conexión configurada. ' + (currentUser ? 'Sesión recuperada.' : 'Ahora inicia sesión.'), 'ok');
+    if (currentUser) await loadRows();
+  }
+  async function login(signup=false) {
+    requireClient();
+    const email = $('email').value.trim(), password = $('password').value;
+    if (!email || !password) throw new Error('Escribe correo y contraseña.');
+    const result = signup
+      ? await client.auth.signUp({email, password})
+      : await client.auth.signInWithPassword({email, password});
+    if (result.error) throw result.error;
+    currentUser = result.data.user || null;
+    setAuthUI();
+    if (signup && !result.data.session) {
+      status('Usuario solicitado. Revisa el correo para confirmar la cuenta si Supabase lo requiere; luego inicia sesión.', 'ok');
+      return;
+    }
+    status(signup ? 'Usuario creado e iniciado sesión.' : 'Sesión iniciada correctamente.', 'ok');
+    await loadRows();
+  }
+  function requireClient() {
+    if (!client) throw new Error('Pulsa Conectar primero.');
+  }
+  async function loadRows(filters={}) {
+    requireConnection();
+    let q = client.from(TABLE).select('id,ciudad,fecha,evento,qr,created_at').order('fecha',{ascending:true}).order('ciudad',{ascending:true});
+    if (filters.city) q = q.ilike('ciudad', `%${filters.city.replace(/[%_]/g,'')}%`);
+    if (filters.date) q = q.eq('fecha', filters.date);
+    const {data,error} = await q;
+    if (error) throw error;
+    records = data || [];
+    renderRows();
+    $('tableMessage').textContent = `${records.length} registro(s).`;
+    $('listTitle').textContent = filters.city || filters.date ? 'Resultados de búsqueda' : 'Entradas registradas';
+  }
+  function renderRows() {
+    const tbody = $('rows'); tbody.replaceChildren();
+    for (const r of records) {
+      const tr = document.createElement('tr');
+      [r.ciudad, r.fecha, r.evento].forEach(v => { const td=document.createElement('td'); td.textContent=v || ''; tr.appendChild(td); });
+      const qrtd=document.createElement('td'); qrtd.className='qr';
+      if (r.qr && /^https?:\/\//i.test(r.qr)) { const a=document.createElement('a'); a.href=r.qr; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent='Abrir QR / boleto'; qrtd.appendChild(a); }
+      else qrtd.textContent=r.qr || '—';
+      tr.appendChild(qrtd);
+      const td=document.createElement('td');
+      const edit=document.createElement('button'); edit.className='rowbtn secondary'; edit.textContent='Editar'; edit.onclick=()=>fillForm(r);
+      const del=document.createElement('button'); del.className='rowbtn danger'; del.textContent='Eliminar'; del.onclick=()=>deleteRow(r);
+      td.append(edit,del); tr.appendChild(td); tbody.appendChild(tr);
+    }
+  }
+  function fillForm(r) {
+    setMode('modificar');
+    $('recordId').value=r.id; $('ciudad').value=r.ciudad; $('fecha').value=r.fecha;
+    $('evento').value=r.evento; $('qr').value=r.qr || '';
+    $('formTitle').textContent='Modificar entrada seleccionada';
+    $('saveBtn').textContent='GUARDAR CAMBIOS';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function clearForm() {
+    $('recordId').value=''; ['ciudad','fecha','evento','qr'].forEach(id=>$(id).value='');
+    $('formTitle').textContent=mode==='modificar'?'Selecciona una entrada para modificar':'Ingresar entrada';
+    $('saveBtn').textContent=mode==='modificar'?'Selecciona una entrada':'INGRESAR';
+    $('saveBtn').disabled=mode==='modificar';
+  }
+  function setMode(next) {
+    mode=next;
+    document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+    $('entryPanel').classList.toggle('hidden',mode==='ver'||mode==='buscar');
+    $('searchPanel').classList.toggle('hidden',mode!=='buscar');
+    if(mode==='modificar') { $('formTitle').textContent='Modificar entrada seleccionada'; $('saveBtn').textContent='Selecciona una entrada'; $('saveBtn').disabled=true; }
+    else if(mode==='ingresar') { clearForm(); $('saveBtn').disabled=false; }
+    else if(mode==='ver') { clearForm(); $('listTitle').textContent='Todas las entradas'; }
+  }
+  async function saveEntry() {
+    requireConnection();
+    const ciudad=$('ciudad').value.trim(), fecha=$('fecha').value, evento=$('evento').value.trim(), qr=$('qr').value.trim();
+    if(!ciudad || !fecha || !evento) throw new Error('Ciudad, Fecha y Evento son obligatorios.');
+    const d=new Date(fecha+'T00:00:00Z');
+    if(Number.isNaN(d.getTime()) || d.toISOString().slice(0,10)!==fecha) throw new Error('La fecha no es válida.');
+    const payload={ciudad,fecha,evento,qr:qr || null};
+    let result;
+    if(mode==='modificar') {
+      const id=$('recordId').value;
+      if(!id) throw new Error('Selecciona una entrada con el botón Editar.');
+      result=await client.from(TABLE).update(payload).eq('id',id).select().single();
+    } else {
+      result=await client.from(TABLE).insert(payload).select().single();
+    }
+    if(result.error) throw result.error;
+    status(mode==='modificar'?'Cambios guardados correctamente.':'Entrada guardada correctamente.','ok');
+    setMode('ingresar'); clearForm(); await loadRows();
+  }
+  async function deleteRow(r) {
+    if(!confirm(`¿Eliminar la entrada "${r.evento}" de ${r.ciudad} (${r.fecha})?`)) return;
+    try { requireConnection(); const {error}=await client.from(TABLE).delete().eq('id',r.id); if(error) throw error; status('Entrada eliminada.','ok'); await loadRows(); }
+    catch(e){status(e.message || String(e),'err');}
+  }
+  async function run(fn) { try { await fn(); } catch(e) { status(e.message || String(e),'err'); } }
+  $('connectBtn').addEventListener('click',()=>run(connect));
+  $('forgetConfig').addEventListener('click',()=>{localStorage.removeItem('entradasEuropa0327Config');$('supabaseUrl').value='';$('supabaseKey').value='';client=null;currentUser=null;setAuthUI();status('Configuración local borrada.','ok');});
+  $('loginBtn').addEventListener('click',()=>run(()=>login(false)));
+  $('signupBtn').addEventListener('click',()=>run(()=>login(true)));
+  $('logoutBtn').addEventListener('click',()=>run(async()=>{requireClient();const {error}=await client.auth.signOut();if(error)throw error;currentUser=null;setAuthUI();records=[];renderRows();status('Sesión cerrada.','ok');}));
+  $('saveBtn').addEventListener('click',()=>run(saveEntry));
+  $('clearBtn').addEventListener('click',clearForm);
+  $('searchBtn').addEventListener('click',()=>run(()=>loadRows({city:$('filterCity').value.trim(),date:$('filterDate').value})));
+  $('showAllBtn').addEventListener('click',()=>run(()=>loadRows()));
+  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.mode);if(b.dataset.mode==='ver')run(()=>loadRows());}));
+  setAuthUI(); setMode('ingresar');
+})();
+</script>
+</body>
+</html>
